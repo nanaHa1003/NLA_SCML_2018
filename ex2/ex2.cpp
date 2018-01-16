@@ -38,7 +38,7 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
         // Perform pivoting if necessary
         if (pivot_idx != i) {
             std::swap(ipiv[i], ipiv[pivot_idx]);
-            for (int j = 0; j < n; ++j) {
+            for (int j = i; j < n; ++j) {
                 std::swap(A[i * lda + j], A[pivot_idx * lda + j]);
             }
         }
@@ -59,10 +59,14 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
 int main(int argc, char **argv) {
     std::vector<int> test_sizes = {{ 8, 16, 32, 64, 128, 256, 512, 1024, 2048 }};
 
+    // LU without pivoting
     for (int size: test_sizes) {
         std::vector<double> A(size * size);
 
-        std::generate(A.begin(), A.end(), std::rand);
+        // Generate random matrix A
+        std::generate(A.begin(), A.end(), [](){
+            return static_cast<double>(std::rand()) / RAND_MAX;
+        });
 
         auto start = std::chrono::system_clock::now();
         getrf(size, A.data(), size);
@@ -72,11 +76,15 @@ int main(int argc, char **argv) {
         std::cout << diff.count() << std::endl;
     }
 
+    // LU with pivoting
     for (int size: test_sizes) {
         std::vector<double> A(size * size);
         std::vector<int>    ipiv(size);
 
-        std::generate(A.begin(), A.end(), std::rand);
+        // Generate random matrix A
+        std::generate(A.begin(), A.end(), [](){
+            return static_cast<double>(std::rand()) / RAND_MAX;
+        });
 
         auto start = std::chrono::system_clock::now();
         getrf_pivot(size, A.data(), size, ipiv.data());
