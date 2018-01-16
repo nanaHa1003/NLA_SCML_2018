@@ -1,11 +1,11 @@
 FLAGS = --std=c++11 -O3
 
-all: ex1
+all: ex2
 
-ex1: ex1.cpp
+ex2: ex2.cpp
 	$(CXX) $(FLAGS) $(CXXFLAGS) $^ -o $@
 
 .PHONY: clean
 
 clean:
-	$(RM) ex1
+	$(RM) ex2
