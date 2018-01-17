@@ -1,8 +1,10 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <numeric>
 #include <chrono>
+#include <functional>
 
 template <typename T>
 void getrf(int n, T* A, int lda) noexcept {
@@ -25,12 +27,12 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
     std::iota(ipiv, ipiv + n, 0);
 
     for (int i = 0; i < n; ++i) {
-        // Find pivot first
+        // First find column pivot
         int pivot_idx = i;
         T   pivot_val = A[i * lda + i];
         for (int j = i + 1; j < n; ++j) {
-            if (A[i * lda + j] > pivot_val) {
-                pivot_val = A[i * lda + j];
+            if (A[j * lda + i] > pivot_val) {
+                pivot_val = A[j * lda + i];
                 pivot_idx = j;
             }
         }
@@ -38,12 +40,10 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
         // Perform pivoting if necessary
         if (pivot_idx != i) {
             std::swap(ipiv[i], ipiv[pivot_idx]);
-            for (int j = i; j < n; ++j) {
-                std::swap(A[i * lda + j], A[pivot_idx * lda + j]);
-            }
+            std::swap_ranges(A + i * lda + i, A + (i + 1) * lda, A + pivot_idx * lda + i);
         }
 
-        T inv_pivot = 1.0 / A[i * lda + i];
+        T inv_pivot = 1.0 / pivot_val;
         for (int j = i + 1; j < n; ++j) {
             A[i * lda + j] *= inv_pivot;
         }
@@ -57,7 +57,18 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
 }
 
 int main(int argc, char **argv) {
-    std::vector<int> test_sizes = {{ 8, 16, 32, 64, 128, 256, 512, 1024, 2048 }};
+    std::vector<int>    test_sizes = {{ 8, 16, 32, 64, 128, 256, 512, 1024, 2048 }};
+    std::vector<double> elap_times;
+
+    elap_times.reserve(test_sizes.size());
+
+    std::cout << std::setprecision(8);
+    std::cout.setf(std::ios_base::fixed);
+
+    for (size_t i = 0; i < test_sizes.size() - 1; ++i) {
+        std::cout << test_sizes[i] << ",";
+    }
+    std::cout << test_sizes.back() << std::endl;
 
     // LU without pivoting
     for (int size: test_sizes) {
@@ -73,8 +84,16 @@ int main(int argc, char **argv) {
         auto end = std::chrono::system_clock::now();
 
         std::chrono::duration<double> diff = end - start;
-        std::cout << diff.count() << std::endl;
+        elap_times.push_back(diff.count());
     }
+
+    // Summarize LU performance
+    for (size_t i = 0; i < test_sizes.size() - 1; ++i) {
+        std::cout << elap_times[i] << ",";
+    }
+    std::cout << elap_times.back() << std::endl;
+
+    elap_times.resize(0);
 
     // LU with pivoting
     for (int size: test_sizes) {
@@ -91,8 +110,14 @@ int main(int argc, char **argv) {
         auto end = std::chrono::system_clock::now();
 
         std::chrono::duration<double> diff = end - start;
-        std::cout << diff.count() << std::endl;
+        elap_times.push_back(diff.count());
     }
+
+    // Summarize LU w/ pivoting performance
+    for (size_t i = 0; i < test_sizes.size() - 1; ++i) {
+        std::cout << elap_times[i] << ",";
+    }
+    std::cout << elap_times.back() << std::endl;
 
     return 0;
 }

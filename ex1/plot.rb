@@ -9,9 +9,9 @@ times = CSV.parse(File.read('ex1.csv'))
   times[i] = times[i].map { |x| x.to_f}
 end
 
-nrm2_gflop = times[0].map { |size|  2e-9 * size }
-gemv_gflop = times[0].map { |size|  2e-9 * size * size }
-gemm_gflop = times[0].map { |size|  2e-9 * size * size * size }
+nrm2_gflop = times[0].map { |size|   4e-9 * size }
+gemv_gflop = times[0].map { |size|   7e-9 * size * size }
+gemm_gflop = times[0].map { |size|  10e-9 * size * size * size }
 
 nrm2_perf = []
 gemv_perf = []
@@ -30,7 +30,14 @@ gemm_gflop.each_with_index do |gflop, idx|
 end
 
 plt = Matplotlib::Pyplot
-plt.plot(times[0], nrm2_perf)
-plt.plot(times[0], gemv_perf)
-plt.plot(times[0], gemm_perf)
+
+plt.xlabel("Problem Sizes")
+plt.ylabel("GFlop/s")
+
+plt.plot(times[0], nrm2_perf, 'r', label='nrm2')
+plt.plot(times[0], gemv_perf, 'g', label='gemv')
+plt.plot(times[0], gemm_perf, 'b', label='gemm')
+
+plt.legend()
+
 plt.savefig('ex1.png')

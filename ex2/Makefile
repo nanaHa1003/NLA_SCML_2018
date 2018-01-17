@@ -1,4 +1,4 @@
-FLAGS = --std=c++11 -O3
+FLAGS = --std=c++11 -O3 -pedantic
 
 all: ex2
 
