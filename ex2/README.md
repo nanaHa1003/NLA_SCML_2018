@@ -9,7 +9,7 @@ use `make plot` to run and generate performance figure.
 Problem Analysis
 ====================
 
-The computational cost of LU factorization is about O(2n/3) where n is the
+The computational cost of LU factorization is about O((2/3)n^3) where n is the
 row/column dimension of the matrix.
 
 Performance Results

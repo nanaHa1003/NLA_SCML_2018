@@ -9,8 +9,8 @@ times = CSV.parse(File.read('ex2.csv'))
   times[i] = times[i].map { |x| x.to_f}
 end
 
-getrf_n_gflop = times[0].map { |size| (1.0 / 6.0) * size * (size + 1) * (4.0 * size + 5) }
-getrf_p_gflop = times[0].map { |size| (1.0 / 6.0) * size * (size + 1) * (4.0 * size + 5) }
+getrf_n_gflop = times[0].map { |size| (2.0 / 3.0) * size**3 }
+getrf_p_gflop = times[0].map { |size| (2.0 / 3.0) * size**3 }
 
 getrf_n_perf = []
 getrf_p_perf = []
