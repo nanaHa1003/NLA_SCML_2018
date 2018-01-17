@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <numeric>
 #include <chrono>
-#include <functional>
 
 template <typename T>
 void getrf(int n, T* A, int lda) noexcept {

@@ -34,10 +34,8 @@ plt = Matplotlib::Pyplot
 plt.xlabel("Problem Sizes")
 plt.ylabel("GFlop/s")
 
-plt.plot(times[0], nrm2_perf, 'r', label='nrm2')
-plt.plot(times[0], gemv_perf, 'g', label='gemv')
-plt.plot(times[0], gemm_perf, 'b', label='gemm')
-
-plt.legend()
+plt.plot(times[0], nrm2_perf, 'r')
+plt.plot(times[0], gemv_perf, 'g')
+plt.plot(times[0], gemm_perf, 'b')
 
 plt.savefig('ex1.png')

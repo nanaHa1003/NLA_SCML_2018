@@ -5,6 +5,10 @@ all: ex2
 ex2: ex2.cpp
 	$(CXX) $(FLAGS) $(CXXFLAGS) $^ -o $@
 
+plot: ex2
+	./ex2 > ex2.csv
+	./plot.rb
+
 .PHONY: clean
 
 clean:

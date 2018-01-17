@@ -11,13 +11,22 @@ Problem Analysis
 
 1. Norm
 
+    The computational complexity is aobut O(2 * size).
+
 2. Matrix-vector product
+
+    The computational complexity is about O(2 * size^2).
 
 3. Matrix-matrix multiplication
 
+    The computational complexity is about O(2 * size^3).
 
 Performance Results
 ====================
 
-![GFlops/Size](ex1.png)
+The performance result figure is plotted as below, the red line is the result
+for `nrm2`, green line is for `gemv`, blue line is for `gemm`. Since I supports
+`lda` and `incx` in my implementation, my plotting script also include these 
+extra computations in computing total complexity.
 
+![GFlops/Size](ex1.png)
