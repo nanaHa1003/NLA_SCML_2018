@@ -164,28 +164,28 @@ void getrf_omp_task(int n, T *A, int lda) {
     }
 }
 
+template <int size = 16, int bs = 8>
 void test() noexcept {
-    std::vector<double> A = {{
-        4.0, 3.0, 2.0, 1.0,
-        3.0, 4.0, 3.0, 2.0,
-        2.0, 3.0, 4.0, 3.0,
-        1.0, 2.0, 3.0, 4.0
-    }};
+    std::vector<double> A(size * size);
+    std::generate(A.begin(), A.end(), [](){
+        return static_cast<double>(rand()) / RAND_MAX;
+    });
 
     std::vector<double> B = A;
 
-    getrf2(4, A.data(), 4);
-    getrf_omp_task<double, 2>(4, B.data(), 4);
+    getrf2(size, A.data(), size);
+    getrf_omp_task<double, bs>(size, B.data(), size);
 
     double norm = 0.0;
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < size * size; ++i) {
         norm += (A[i] - B[i]) * (A[i] - B[i]);
     }
+    std::cout << norm << std::endl;
     assert(norm < std::numeric_limits<double>::epsilon());
 }
 
 int main(int argc, char **argv) {
-    test();
+    test<4, 2>();
 
     std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048 }};
     std::vector<double> elap_times;
