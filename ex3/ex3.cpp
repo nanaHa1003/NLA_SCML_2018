@@ -69,12 +69,10 @@ void gemm(
         }
     }
 
-    for (int i = 0; i < m; ++i) {
-        T *B_ptr = B + i * ldb;
-        for (int j = 0; j < n; ++j) {
-            T *C_ptr = C + i * ldc + j;
-            for (int l = 0; l < k; ++l) {
-                *C_ptr += alpha * A[l * lda + j] * B_ptr[l];
+    for (int j = 0; j < n; ++j) {
+        for (int l = 0; l < k; ++l) {
+            for (int i = 0; i < m; ++i) {
+                C[j * ldc + i] += alpha * B[j * ldb + l] * A[l * lda + i];
             }
         }
     }
@@ -90,9 +88,6 @@ void getrf(int n, T *A, int lda) noexcept {
 
     for (int i = 0; i < n; i += bs) {
         if (n - i > bs) {
-            // Alias blocks
-            // [ A11 A12 ]
-            // [ A21 A22 ]
             T *A11 = A + i * lda + i;
             T *A12 = A11 + bs * lda;
             T *A21 = A11 + bs;
@@ -106,6 +101,10 @@ void getrf(int n, T *A, int lda) noexcept {
             getrf2(n - i, A + i * lda + i, lda);
         }
     }
+}
+
+inline int min(int a, int b) noexcept {
+    return std::min(a, b);
 }
 
 template <typename T, int bs = 64>
@@ -123,19 +122,19 @@ void getrf_omp_task(int n, T *A, int lda) {
                 // Divide into blocks
                 T *A11 = A + i * lda + i;
 
-                #pragma omp task depend(inout: A11)
+                #pragma omp task depend(inout: A[i * lda + i])
                 getrf2(bs, A11, lda);
 
                 for (int j = i + bs; j < n; j += bs) {
-                    int rs = std::min(bs, n - j);
+                    int rs = min(bs, n - j);
 
                     T *A1j = A + j * lda + i;
                     T *Aj1 = A + i * lda + j;
 
-                    #pragma omp task depend(in: A11) depend(inout: A1j)
+                    #pragma omp task depend(in: A[i * lda + i]) depend(inout: A[j * lda + i])
                     trsm_llnu(bs, rs, A11, lda, A1j, lda);
 
-                    #pragma omp task depend(in: A11) depend(inout: Aj1)
+                    #pragma omp task depend(in: A[i * lda + i]) depend(inout: A[i * lda + j])
                     trsm_runn(rs, bs, A11, lda, Aj1, lda);
                 }
 
@@ -145,15 +144,16 @@ void getrf_omp_task(int n, T *A, int lda) {
                         T *A1k = A + k * lda + i;
                         T *Ajk = A + k * lda + j;
 
-                        int ms = std::min(bs, n - j);
-                        int ns = std::min(bs, n - k);
+                        int ms = min(bs, n - j);
+                        int ns = min(bs, n - k);
 
-                        #pragma omp task depend(in: Aj1, A1k) depend(inout: Ajk)
+                        #pragma omp task depend(in: A[i * lda + j], A[k * lda + i]) depend(inout: A[k * lda + j])
                         gemm(ms, ns, bs, T(-1.0), Aj1, lda, A1k, lda, T(1.0), Ajk, lda);
                     }
                 }
 
             } else {
+                #pragma omp task depend(inout: A[i * lda + i])
                 getrf2(n - i, A + i * lda + i, lda);
             }
             #pragma omp taskwait
@@ -184,9 +184,9 @@ void test() noexcept {
 }
 
 int main(int argc, char **argv) {
-    test<256, 32>();
+    test<1024, 32>();
 
-    std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048 }};
+    std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 }};
     std::vector<double> elap_times;
 
     elap_times.reserve(test_sizes.size());
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
         });
 
         auto start = std::chrono::high_resolution_clock::now();
-        getrf_omp_task(size, A.data(), size);
+        getrf_omp_task<double, 64>(size, A.data(), size);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> diff = end - start;
