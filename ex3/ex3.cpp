@@ -64,18 +64,15 @@ void gemm(
     T beta,
     T *C, int ldc) noexcept {
     if (std::abs(beta - T(1.0)) > std::numeric_limits<T>::epsilon()) {
-        for (int j = 0; j < n; ++j) {
-            T *C_ptr = C + j * ldc;
-            for (int i = 0; i < m; ++i) {
-                C_ptr[i] *= beta;
-            }
+        for (int i = 0; i < m * n; ++i) {
+            C[i] *= beta;
         }
     }
 
     for (int i = 0; i < m; ++i) {
         T *B_ptr = B + i * ldb;
         for (int j = 0; j < n; ++j) {
-            T *C_ptr = C + j * ldc + i;
+            T *C_ptr = C + i * ldc + j;
             for (int l = 0; l < k; ++l) {
                 *C_ptr += alpha * A[l * lda + j] * B_ptr[l];
             }
@@ -168,9 +165,12 @@ template <int size = 16, int bs = 8>
 void test() noexcept {
     std::vector<double> A(size * size);
     std::generate(A.begin(), A.end(), [](){
-        return static_cast<double>(rand()) / RAND_MAX;
+        return 0.1 * static_cast<double>(rand()) / RAND_MAX;
     });
 
+    for (int i = 0; i < size; ++i) {
+        A[i * size + i] += 1.0;
+    }
     std::vector<double> B = A;
 
     getrf2(size, A.data(), size);
@@ -180,12 +180,11 @@ void test() noexcept {
     for (int i = 0; i < size * size; ++i) {
         norm += (A[i] - B[i]) * (A[i] - B[i]);
     }
-    std::cout << norm << std::endl;
     assert(norm < std::numeric_limits<double>::epsilon());
 }
 
 int main(int argc, char **argv) {
-    test<4, 2>();
+    test<256, 32>();
 
     std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048 }};
     std::vector<double> elap_times;
