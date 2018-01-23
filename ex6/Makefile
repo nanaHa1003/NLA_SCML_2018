@@ -6,9 +6,9 @@ MPI_INC  = -I$(MPI_PATH)/include
 MPI_LIB  = $(MPI_PATH)/lib
 MPI_LNK  = -L$(MPI_LIB) -lmpi
 
-all: ex6
+all: ex6.out
 
-ex6: ex6.o
+ex6.out: ex6.o
 	$(CXX) $(FLAGS) -o $@ $^ $(MPI_LNK)
 
 ex6.o: ex6.cpp

@@ -1,9 +1,9 @@
 NVCC = nvcc
 FLAGS = --std=c++11 -O3
 
-all: ex5
+all: ex5.out
 
-ex5: spmv_framework.o mmio.o
+ex5.out: spmv_framework.o mmio.o
 	$(NVCC) $(FLAGS) $^ -o $@
 
 mmio.o: mmio.cu

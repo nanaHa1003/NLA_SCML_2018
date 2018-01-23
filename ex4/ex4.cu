@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include <cuda_runtime.h>
 
 __global__ void count_row_nnz(int m, int n, double *A, int lda, int *rownnz) {
@@ -92,7 +93,7 @@ void build_rowptr(int n, int *rowptr) {
     int gs = (n - 1) / (bs << 1) + 1;
 
     int *buffer;
-    cudaError_t cudaErr = cudaMalloc(static_cast<void **>(&buffer), gs * sizeof(int));
+    cudaError_t cudaErr = cudaMalloc(reinterpret_cast<void **>(&buffer), gs * sizeof(int));
     assert(cudaErr == cudaSuccess);
 
     block_scan<<<gs , bs, 2 * bs * sizeof(int)>>>(n, rowptr, buffer);
@@ -111,8 +112,8 @@ __global__ void fill_csr_values(
     int *rowptr, int *colidx, double *values) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     if (tid < m) {
-        int    idx = rowptr[tid];
-        double ptr = A + tid;
+        int     idx = rowptr[tid];
+        double *ptr = A + tid;
 
         for (int i = 0; i < n; ++i) {
             if (*ptr) {
@@ -152,6 +153,6 @@ void full_to_csr(
     cudaErr = cudaMalloc(values, nnz * sizeof(double));
     assert(cudaErr == cudaSuccess);
 
-    fill_csr_values<<<gs, bs>>>();
+    fill_csr_values<<<gs, bs>>>(m, n, A, lda, *rowptr, *colidx, *values);
     assert(cudaGetLastError() == cudaSuccess);
 }
