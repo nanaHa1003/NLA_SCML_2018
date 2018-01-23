@@ -27,7 +27,19 @@ void full_to_csr_ref(
         rowptr[0][i + 1] += rowptr[0][i];
     }
 
+    *colidx = new int[rowptr[0][m]];
+    *values = new double[rowptr[0][m]];
 
+    int pos = 0;
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (A[i * lda + j]) {
+                colidx[0][pos] = j;
+                values[0][pos] = A[i * lda + j];
+                ++pos;
+            }
+        }
+    }
 }
 
 template <typename T>
