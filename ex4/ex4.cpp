@@ -72,7 +72,7 @@ int test(int size) {
     cudaErr = cudaMemcpy(d_A, A, size * size * sizeof(double), cudaMemcpyHostToDevice);
     assert(cudaErr == cudaSuccess);
 
-    int *d_rowptr, *d_colidx;
+    int    *d_rowptr, *d_colidx;
     double *d_values;
     full_to_csr(size, size, d_A, size, &d_rowptr, &d_colidx, &d_values);
 
@@ -83,9 +83,9 @@ int test(int size) {
 
     cudaErr = cudaMemcpy(h_rowptr, d_rowptr, (size + 1) * sizeof(int), cudaMemcpyDeviceToHost);
     assert(cudaErr == cudaSuccess);
-    cudaErr = cudaMemcpy(h_colidx, d_colidx, rowptr[size] * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaErr = cudaMemcpy(h_colidx, d_colidx, h_rowptr[size] * sizeof(int), cudaMemcpyDeviceToHost);
     assert(cudaErr == cudaSuccess);
-    cudaErr = cudaMemcpy(h_values, d_values, rowptr[size] * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaErr = cudaMemcpy(h_values, d_values, h_rowptr[size] * sizeof(double), cudaMemcpyDeviceToHost);
     assert(cudaErr == cudaSuccess);
 
     int errcnt = 0;
@@ -114,6 +114,6 @@ int test(int size) {
 }
 
 int main() {
-    assert(test(256) == 0);
+    assert(test(2048) == 0);
     return 0;
 }

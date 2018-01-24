@@ -1,12 +1,12 @@
 CXX = g++
-FLAGS = --std=c++11 -O3
+FLAGS = --std=c++11 -O0 -g
 
 CUDADIR = /usr/local/cuda-9.1
 CUDAINC = $(CUDADIR)/include
 CUDALIB = $(CUDADIR)/lib64
 CUDALNK = -L$(CUDALIB) -lcudart
 
-NVCC = $(CUDADIR)/bin/nvcc
+NVCC = $(CUDADIR)/bin/nvcc -g -G
 
 all: ex4.out
 
