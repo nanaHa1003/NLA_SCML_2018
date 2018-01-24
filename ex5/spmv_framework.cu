@@ -23,9 +23,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <assert.h>
 #include <algorithm>
 #include <vector>
 #include <utility>  // pair
+#include <limits>
 #include <mmio.h>
 
 /**
@@ -42,6 +45,22 @@ static bool compare_first(
     return (a.first < b.first);
 }
 
+__global__ void spmv_kernel(
+    int           m,
+    const int    *rowptr,
+    const int    *colidx,
+    const double *values,
+    const double *x,
+    double       *y) {
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    double tmp = 0.0;
+    if (tid < m) {
+        for (int idx = rowptr[tid]; idx < rowptr[tid + 1]; ++idx) {
+            tmp += x[colidx[idx]] * values[idx];
+        }
+        y[tid] = tmp;
+    }
+}
 
 extern "C"
 int main(int argc, char *argv[])
@@ -222,11 +241,11 @@ int main(int argc, char *argv[])
     // here goes your kernel
     // define the kernel in a seperate file, please.
     // configure your compute grid using
-    // dim3 block(xxx);
-    // dim3 grid(yyy);
+    dim3 block(1024);
+    dim3 grid((M - 1) / 1024 + 1);
     cudaEventRecord(start);
-    // for(i=0; i<100; i++))
-    //     spmv_kernel<<<grid,block>>>( M, N, nz, drow, dcol, dval, dx, dy, ... );
+    for(i=0; i<100; i++)
+        spmv_kernel<<<grid, block>>>( M, drow, dcol, dval, dx, dy );
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
 
@@ -247,7 +266,19 @@ int main(int argc, char *argv[])
     // validity test...
     // You should compare the result in y with the reference result in y2
     // Explain what you do and how you do it.
+    for (int i = 0; i < M; ++i) {
+        y2[i] = 0;
+        for (int idx = row[i]; idx < row[i + 1]; ++idx) {
+            y2[i] += x[col[idx]] * val[idx];
+        }
+    }
 
+    double err = 0.0;
+    for (int i = 0; i < M; ++i) {
+        err += pow(y[i] - y2[i], 2);
+    }
+    err = sqrt(err);
+    assert(err < std::numeric_limits<double>::epsilon());
 
     /**************************************************************************/
     /* In the end, we have to free all allocated memory.                      */
