@@ -21,12 +21,18 @@ Problem Analysis
 
     The computational complexity is about O(2 * size^3).
 
+Hardware Limits
+====================
+
+The CPU I used is Intel(R) Xeon(R) CPU E5-2650 v4 @ 2.20GHz, which has
+`2.2 * 1 * 16 = 35.2` GFLOPs for each core.
+
 Performance Results
 ====================
 
 The performance result figure is plotted as below, the red line is the result
 for `nrm2`, green line is for `gemv`, blue line is for `gemm`. Since I supports
-`lda` and `incx` in my implementation, my plotting script also include these 
+`lda` and `incx` in my implementation, my plotting script also include these
 extra computations in computing total complexity.
 
 ![GFlops/Size](ex1.png)

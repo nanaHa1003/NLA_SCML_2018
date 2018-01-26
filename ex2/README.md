@@ -20,3 +20,6 @@ the performance result is as below. The green line is LU factorization without
 pivoting and the blue one is with pivoting.
 
 ![GFlops/Size](ex2.png)
+
+The Performance of LU with pivoting is slightly slower than the other one, but
+when the size grows up, The performance seems to be similar in my test cases.
