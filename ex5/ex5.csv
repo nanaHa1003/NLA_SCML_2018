@@ -1,0 +1,5 @@
+matrix,size,nnz,time
+bcsstk24.mtx,3562,81736,0.061675
+bcsstm11.mtx,1473,1473,0.005813
+rotor1.mtx,100,708,0.006522
+Trefethen_2000.mtx,2000,21953,0.018075
