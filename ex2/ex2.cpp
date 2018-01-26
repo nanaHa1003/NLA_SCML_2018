@@ -1,8 +1,11 @@
+#include <cmath>
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <limits>
 #include <chrono>
 
 template <typename T>
@@ -55,8 +58,50 @@ void getrf_pivot(int n, T* A, int lda, int *ipiv) noexcept {
     }
 }
 
+void test(int size) noexcept {
+    std::vector<double> A(size * size);
+    std::generate(A.begin(), A.end(), [](){
+        return 0.01 * static_cast<double>(std::rand()) / RAND_MAX;
+    });
+
+    for (int i = 0; i < size; ++i) {
+        A[i * size + i] += 1.0;
+    }
+
+    std::vector<double> x(size, 1.0), y(size, 0.0);
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            y[j] += x[i] * A[i * size + j];
+        }
+    }
+
+    getrf(size, A.data(), size);
+
+    for (int i = 0; i < size; ++i) {
+        for (int j = i + 1; j < size; ++j) {
+            y[j] -= A[i * size + j] * y[i];
+        }
+    }
+
+    for (int i = size - 1; i >= 0; --i) {
+        y[i] /= A[i * size + i];
+        for (int j = i - 1; j >= 0; --j) {
+            y[j] -= A[i * size + j] * y[i];
+        }
+    }
+
+    int nrm2 = 0.0;
+    for (int i = 0; i < size; ++i) {
+        nrm2 += (x[i] - y[i]) * (x[i] - y[i]);
+    }
+    nrm2 = sqrt(nrm2);
+    assert(nrm2 < std::numeric_limits<double>::epsilon());
+}
+
 int main(int argc, char **argv) {
-    std::vector<int>    test_sizes = {{ 8, 16, 32, 64, 128, 256, 512, 1024, 2048 }};
+    test(256);
+
+    std::vector<int>    test_sizes = {{ 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 }};
     std::vector<double> elap_times;
 
     elap_times.reserve(test_sizes.size());

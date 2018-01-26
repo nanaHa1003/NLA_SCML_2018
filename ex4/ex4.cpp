@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <vector>
 #include <algorithm>
 #include <chrono>
 
@@ -99,6 +100,7 @@ int test(int size) {
       if (values[i] != h_values[i]) errcnt += 1;
     }
 
+    cudaFree(d_A);
     cudaFree(d_rowptr);
     cudaFree(d_colidx);
     cudaFree(d_values);
@@ -114,6 +116,40 @@ int test(int size) {
 }
 
 int main() {
-    assert(test(2048) == 0);
+    assert(test(1024) == 0);
+
+    std::vector<int> test_sizes = {{ 64, 128, 256, 512, 1024, 2048, 4096 }};
+
+    for (auto size: test_sizes) {
+        std::vector<double> A(size * size, 0.0);
+
+        A[0] =  2.0;
+        A[1] = -1.0;
+        for (size_t i = 1; i < size - 1; ++i) {
+            A[i * size + i - 1] = -1.0;
+            A[i * size + i    ] =  2.0;
+            A[i * size + i + 1] = -1.0;
+        }
+        A[size * size - 2] = -1.0;
+        A[size * size - 1] =  2.0;
+
+        double *d_A;
+        cudaError_t cudaErr;
+        cudaErr = cudaMalloc(&d_A, A.size() * sizeof(double));
+        assert(cudaErr == cudaSuccess);
+
+        cudaErr = cudaMemcpy(d_A, A.data(), A.size() * sizeof(double), cudaMemcpyHostToDevice);
+        assert(cudaErr == cudaSuccess);
+
+        int    *d_row, *d_col;
+        double *d_val;
+        full_to_csr(size, size, d_A, size, &d_row, &d_col, &d_val);
+
+        cudaFree(d_A);
+        cudaFree(d_row);
+        cudaFree(d_col);
+        cudaFree(d_val);
+    }
+
     return 0;
 }

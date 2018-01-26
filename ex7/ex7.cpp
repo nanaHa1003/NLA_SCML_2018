@@ -18,7 +18,7 @@ void save_image(const char *filename, float *buffer, int height, int width) noex
     cv::threshold(image, image, 0, 0, cv::THRESH_TOZERO);
     cv::normalize(image, image, 0.0, 255.0, cv::NORM_MINMAX);
     image.convertTo(image, CV_8UC3);
-    cv::imwrite(image, filename);
+    cv::imwrite(filename, image);
 }
 
 #define checkCUDNN(expression)                                 \
@@ -104,6 +104,7 @@ int main(int argc, char** argv) {
     void *d_workspace = nullptr;
     cudaMalloc(&d_workspace, workspace_bytes);
 
+    int batch_size = 1, channels = 3, height = image.rows, width = image.cols;
     int image_bytes = batch_size * channels * height * width * sizeof(float);
 
     float *d_input = nullptr;
@@ -155,6 +156,7 @@ int main(int argc, char** argv) {
     cudaMemcpy(h_output, d_output, image_bytes, cudaMemcpyDeviceToHost);
 
     // Do something with h_output ...
+    save_image("cudnn-out.png", h_output, height, width);
 
     delete[] h_output;
     cudaFree(d_kernel);
@@ -168,8 +170,6 @@ int main(int argc, char** argv) {
     cudnnDestroyConvolutionDescriptor(convolution_descriptor);
 
     cudnnDestroy(cudnn);
-
-    save_image("cudnn-out.png", h_output, height, width);
 
     return 0;
 }

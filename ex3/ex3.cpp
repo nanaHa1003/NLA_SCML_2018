@@ -186,7 +186,7 @@ void test() noexcept {
 int main(int argc, char **argv) {
     test<1024, 64>();
 
-    std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 }};
+    std::vector<int>    test_sizes = {{ 32, 64, 128, 256, 512, 1024, 2048 }};
     std::vector<double> elap_times;
 
     elap_times.reserve(test_sizes.size());
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
         });
 
         auto start = std::chrono::high_resolution_clock::now();
-        getrf_omp_task<double, 64>(size, A.data(), size);
+        getrf_omp_task<double, 192>(size, A.data(), size);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> diff = end - start;

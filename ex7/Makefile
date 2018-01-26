@@ -11,10 +11,10 @@ CUDNNINC = -I$(CUDNNDIR)/include
 CUDNNLIB = $(CUDNNDIR)/lib64
 CUDNNLNK = -L$(CUDNNLIB) -lcudnn
 
-OPENCVDIR = /usr/local
+OPENCVDIR = /home/u/nanaha/local/modules/Cellar/3.4
 OPENCVINC = -I$(OPENCVDIR)/include
 OPENCVLIB = $(OPENCVDIR)/lib
-OPENCVLNK = -L$(OPENCVLIB) -lopencv_imgcodecs -lopencv_core
+OPENCVLNK = -L$(OPENCVLIB) -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
 
 all: ex7.out
 

@@ -1,4 +1,4 @@
-HPSC 2018 Exercise 1
+SCML 2018 Exercise 1
 ====================
 
 The code `ex1.cpp` contains the naive implementations of required functions.

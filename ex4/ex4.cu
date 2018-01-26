@@ -2,6 +2,37 @@
 #include <iostream>
 #include <cuda_runtime.h>
 
+class CudaTimer {
+ private:
+  cudaEvent_t _start;
+  cudaEvent_t _stop;
+ public:
+  CudaTimer() noexcept {
+    cudaEventCreate(&_start);
+    cudaEventCreate(&_stop);
+  }
+
+  ~CudaTimer() noexcept {
+    cudaEventDestroy(_start);
+    cudaEventDestroy(_stop);
+  }
+
+  void start() noexcept {
+    cudaEventRecord(_start, 0);
+  }
+
+  void stop() noexcept {
+    cudaEventRecord(_stop, 0);
+    cudaEventSynchronize(_stop);
+  }
+
+  float count() noexcept {
+    float time = 0.0;
+    cudaEventElapsedTime(&time, _start, _stop);
+    return time;
+  }
+};
+
 __global__ void count_row_nnz(int m, int n, double *A, int lda, int *rownnz) {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     if (tid < m) {
@@ -98,12 +129,31 @@ void exclusive_scan(int n, int *array) {
     cudaError_t cudaErr = cudaMalloc(reinterpret_cast<void **>(&buffer), gs * sizeof(int));
     assert(cudaErr == cudaSuccess);
 
+#ifndef NDEBUG
+    CudaTimer scanTimer;
+    scanTimer.start();
+#endif
+
     block_scan<<<gs , bs, 2 * bs * sizeof(int)>>>(n, array, buffer);
     assert(cudaGetLastError() == cudaSuccess);
 
+#ifndef NDEBUG
+    scanTimer.stop();
+    std::cout << scanTimer.count() << ",";
+#endif
+
     if (gs > 1) {
+#ifndef NDEBUG
+      CudaTimer addTimer;
+      addTimer.start();
+#endif
       block_add<<<gs - 1, bs>>>(n - (bs << 1), array + (bs << 1), buffer);
       assert(cudaGetLastError() == cudaSuccess);
+
+#ifndef NDEBUG
+      addTimer.stop();
+      std::cout << addTimer.count() << ",";
+#endif
     }
 
     cudaFree(buffer);
@@ -139,10 +189,19 @@ void full_to_csr(
     cudaErr = cudaMalloc(rowptr, (m + 1) * sizeof(int));
     assert(cudaErr == cudaSuccess);
 
+#ifndef NDEBUG
+    CudaTimer cntNnzTimer;
+    cntNnzTimer.start();
+#endif
     // Launch kernel to get number of nnz
     int bs = 1024, gs = (m - 1) / bs + 1;
     count_row_nnz<<<gs, bs>>>(m, n, A, lda, *rowptr);
     assert(cudaGetLastError() == cudaSuccess);
+
+#ifndef NDEBUG
+    cntNnzTimer.stop();
+    std::cout << cntNnzTimer.count() << ",";
+#endif
 
     exclusive_scan(m + 1, *rowptr);
 
@@ -156,6 +215,16 @@ void full_to_csr(
     cudaErr = cudaMalloc(values, nnz * sizeof(double));
     assert(cudaErr == cudaSuccess);
 
+#ifndef NDEBUG
+    CudaTimer fillValTimer;
+    fillValTimer.start();
+#endif
+
     fill_csr_values<<<gs, bs>>>(m, n, A, lda, *rowptr, *colidx, *values);
     assert(cudaGetLastError() == cudaSuccess);
+
+#ifndef NDEBUG
+    fillValTimer.stop();
+    std::cout << fillValTimer.count() << std::endl;
+#endif
 }

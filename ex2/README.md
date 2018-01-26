@@ -1,4 +1,4 @@
-HPSC 2018 Exercise 2
+SCML 2018 Exercise 2
 ====================
 
 The code `ex2.cpp` contains the naive implementations of required functions.

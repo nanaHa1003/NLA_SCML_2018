@@ -1,4 +1,4 @@
-FLAGS = --std=c++11 -O3
+FLAGS = --std=c++11 -march=native -O3
 
 all: ex1.out
 
