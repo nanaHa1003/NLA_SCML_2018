@@ -170,7 +170,7 @@ void reverse_cuthill_mckee(
         L_nxt.swap(L_tmp);
 
         typedef std::tuple<SizeType, SizeType> SpVecVal;
-        std::sort(L_nxt.begin(), L_nxt.end(), [&](SpVecVal &a, SpVecVal &b){
+        std::sort(L_nxt.begin(), L_nxt.end(), [&](SpVecVal a, SpVecVal b){
             if (degrees[std::get<0>(a)] < degrees[std::get<0>(b)]) return true;
             return false;
         });
