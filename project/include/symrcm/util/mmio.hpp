@@ -1,4 +1,0 @@
-#ifndef SYMRCM_UTIL_MMIO_HPP_
-#define SYMRCM_UTIL_MMIO_HPP_
-
-#endif  // SYMRCM_UTIL_MMIO_HPP_

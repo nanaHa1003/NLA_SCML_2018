@@ -7,7 +7,7 @@ namespace symrcm {
 namespace cpu {
 
 template <typename ScalarType, typename SizeType = int>
-void count_degree(matrix::Csr<ScalarType, SizeType> &A, SizeType *degrees);
+void count_degree(const matrix::Csr<ScalarType, SizeType> &A, SizeType *degrees);
 
 template <typename ScalarType, typename SizeType = int>
 SizeType find_pseudo_peripheral_vertex(
@@ -18,6 +18,7 @@ template <typename ScalarType, typename SizeType = int>
 void reverse_cuthill_mckee(
     matrix::Csr<ScalarType, SizeType> &A,
     const SizeType                    *degrees,
+    SizeType                           r0,
     SizeType                          *perm);
 
 }  // namespace cpu

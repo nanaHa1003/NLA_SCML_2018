@@ -9,9 +9,12 @@ namespace matrix {
 
 template <typename ScalarType, typename SizeType = int>
 class Csr : public MatrixBase<ScalarType, SizeType> {
+private:
+    typedef MatrixBase<ScalarType, SizeType> base_type;
+
 public:
     Csr(SizeType rows, SizeType cols, SizeType nz)
-        : MatrixBase(rows, cols)
+        : base_type(rows, cols)
         , nnz(nz)
     {
         if (rows > 0 && cols > 0 && nnz > 0) {
@@ -48,7 +51,7 @@ public:
     {}
 
     Csr(Csr<ScalarType, SizeType> &&other)
-        : MatrixBase(other.get_rows(), other.get_cols())
+        : base_type(other.get_rows(), other.get_cols())
     {
         this->nnz    = other.nnz;
         this->rowptr = other.rowptr;

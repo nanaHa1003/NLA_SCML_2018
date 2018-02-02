@@ -9,9 +9,12 @@ namespace matrix {
 
 template <typename ScalarType, typename SizeType>
 class Dense : public MatrixBase<ScalarType, SizeType> {
+protected:
+    typedef MatrixBase<ScalarType, SizeType> base_type;
+
 public:
     Dense(SizeType rows, SizeType cols)
-        : MatrixBase(rows, cols)
+        : base_type(rows, cols)
     {
         if (rows > 0 && cols > 0) {
             data = new ScalarType[rows * cols];
@@ -21,7 +24,7 @@ public:
     }
 
     Dense(SizeType rows, SizeType cols, const ScalarType *vals)
-        : MatrixBase(rows, cols)
+        : base_type(rows, cols)
     {
         if (rows > 0 && cols > 0) {
             data = new ScalarType[rows * cols];
@@ -32,7 +35,7 @@ public:
     }
 
     Dense(SizeType rows, SizeType cols, const ScalarType val)
-        : MatrixBase(rows, cols)
+        : base_type(rows, cols)
     {
         if (rows > 0 && cols > 0) {
             data = new ScalarType[rows * cols];
@@ -43,7 +46,7 @@ public:
     }
 
     Dense(Dense<ScalarType, SizeType> &other)
-        : MatrixBase(other._rows, other._cols)
+        : base_type(other._rows, other._cols)
     {
         if (this->_rows > 0 && this->_cols > 0) {
             data = new ScalarType[this->_rows * this->_cols];
@@ -71,7 +74,7 @@ public:
         this->_cols = other._cols;
 
         if (this->_rows > 0 && this->_cols > 0) {
-            data = new ScalarType[this->_rows * this_cols];
+            data = new ScalarType[this->_rows * this->cols];
             std::copy(other.data, other.data + other._rows * other._cols, data);
         } else {
             data = nullptr;

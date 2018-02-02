@@ -8,10 +8,13 @@ namespace symrcm {
 namespace matrix {
 
 template <typename ScalarType, typename SizeType = int>
-class Coo : public MatrixBase<ScalsrType, SizeType> {
+class Coo : public MatrixBase<ScalarType, SizeType> {
+private:
+    typedef MatrixBase<ScalarType, SizeType> base_type;
+
 public:
     Coo(SizeType rows, SizeType cols, SizeType nz)
-        : MatrixBase(rows, cols)
+        : base_type(rows, cols)
         , nnz(nz)
     {
         if (rows > 0 && cols > 0 && nnz > 0) {
@@ -19,7 +22,7 @@ public:
             colidx = new SizeType[nnz];
             values = new ScalarType[nnz];
         } else {
-            rowptr = nullptr;
+            rowidx = nullptr;
             colidx = nullptr;
             values = nullptr;
         }
@@ -48,7 +51,7 @@ public:
     {}
 
     Coo(Coo<ScalarType, SizeType> &&other)
-        : MatrixBase(other._rows, other._cols)
+        : base_type(other._rows, other._cols)
     {
         this->nnz    = other.nnz;
         this->rowidx = other.rowidx;
@@ -107,13 +110,13 @@ public:
 
     SizeType *get_colidx() const noexcept { return colidx; }
 
-    SizeType *get_values() const noexcept { return values; }
+    ScalarType *get_values() const noexcept { return values; }
 
     const SizeType *get_const_rowidx() const noexcept { return rowidx; }
 
     const SizeType *get_const_colidx() const noexcept { return colidx; }
 
-    const SizeType *get_const_values() const noexcept { return values; }
+    const ScalarType *get_const_values() const noexcept { return values; }
 
 private:
     SizeType    nnz;
