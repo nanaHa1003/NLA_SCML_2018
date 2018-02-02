@@ -29,7 +29,7 @@ The data format I used for adjacency matrix is CSR, more precisely, the
 
 The data format for sparse vector I used is a list of tuples. I use
 `std::vector<std::tuple<int, int>>` in my implementation. And in order to
-reduce memory allocation during the calculation, I have preallocated each
+avoid memory allocation during the calculation, I have preallocated each
 vector to its maximum possible size. Using a memory pool with tree based data
 structure may have less memory usage and better performance.
 
